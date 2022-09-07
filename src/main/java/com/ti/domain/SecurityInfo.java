@@ -1,6 +1,8 @@
 package com.ti.domain;
 
-public class SecurityInfo {
+import java.io.Serializable;
+
+public class SecurityInfo implements Serializable {
     public String sampletime;
     public String location;
     public String type;

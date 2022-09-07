@@ -2,6 +2,7 @@ package com.ti.dwd;
 
 import com.ti.domain.SecurityInfo;
 import com.ti.functions.map.ParseJsonMapFunction;
+import com.ti.utils.serializer.FlinkSecurityInfoSerializationSchema;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -28,15 +29,16 @@ public class ParseJson {
         kafkaStream.print("2");
 
         DataStream<SecurityInfo> infoStream=kafkaStream.map(new ParseJsonMapFunction());
-        DataStream<String> strStream=infoStream.map(new MapFunction<SecurityInfo, String>() {
-            public String map(SecurityInfo value) throws Exception {
-                return value.toString();
-            }
-        });
+//        DataStream<String> strStream=infoStream.map(new MapFunction<SecurityInfo, String>() {
+//            public String map(SecurityInfo value) throws Exception {
+//                return value.toString();
+//            }
+//        });
         Properties properties1=new Properties();
         properties1.setProperty("bootstrap.servers","localhost:9092");
-        strStream.addSink(new FlinkKafkaProducer<String>("dwd_ParseJson",new SimpleStringSchema(),properties1));
 
+//        strStream.addSink(new FlinkKafkaProducer<String>("dwd_ParseJson",new SimpleStringSchema(),properties1));
+        infoStream.addSink(new FlinkKafkaProducer<SecurityInfo>("dwd_ParseJson",new FlinkSecurityInfoSerializationSchema<SecurityInfo>(),properties1));
         env.execute("ParseJson");
     }
 }

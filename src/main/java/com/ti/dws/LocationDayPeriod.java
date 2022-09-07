@@ -2,6 +2,8 @@ package com.ti.dws;
 
 import com.ti.domain.SecurityInfo;
 import com.ti.functions.map.ParseJsonMapFunction;
+import com.ti.utils.serializer.FlinkSecurityInfoDeserializationSchema;
+import com.ti.utils.serializer.FlinkSecurityInfoSerializationSchema;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.functions.KeySelector;
@@ -24,15 +26,15 @@ public class LocationDayPeriod {
         properties.setProperty("value.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
         properties.setProperty("auto.offset.reset","latest");
 
-        DataStream<String> kafkaStream=env.addSource(new FlinkKafkaConsumer<String>("dwd_ParseJson",new SimpleStringSchema(), properties));
-        DataStream<SecurityInfo> infoStream=kafkaStream.map(str -> {
-            SecurityInfo info=new SecurityInfo();
-            info.setLocation("ch6");
-            info.setSampletime("2022-02-02");
-            info.setType("worm");
-            info.setArchitecture("x86");
-            return info;
-        });
+        DataStream<SecurityInfo> infoStream=env.addSource(new FlinkKafkaConsumer<SecurityInfo>("dwd_ParseJson",new FlinkSecurityInfoDeserializationSchema<SecurityInfo>(SecurityInfo.class), properties));
+//        DataStream<SecurityInfo> infoStream=kafkaStream.map(str -> {
+//            SecurityInfo info=new SecurityInfo();
+//            info.setLocation("ch6");
+//            info.setSampletime("2022-02-02");
+//            info.setType("worm");
+//            info.setArchitecture("x86");
+//            return info;
+//        });
 
 //如果用DataStream实现table的group by，需要使用keyedProcessFunction，因为聚合函数必须要开窗。
         StreamTableEnvironment tableEnv=StreamTableEnvironment.create(env);

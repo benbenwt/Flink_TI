@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class FilterAttribute {
     GenerateLocationJson generateLocationJson=new GenerateLocationJson();
     Map<String,String> convertMap=new HashMap<>();
+
     public Map<String,String> getAttributeString(String value)
     {
         Map<String,String> result=new HashMap<>();
