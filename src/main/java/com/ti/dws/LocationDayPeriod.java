@@ -27,23 +27,19 @@ public class LocationDayPeriod {
         properties.setProperty("auto.offset.reset","latest");
 
         DataStream<SecurityInfo> infoStream=env.addSource(new FlinkKafkaConsumer<SecurityInfo>("dwd_ParseJson",new FlinkSecurityInfoDeserializationSchema<SecurityInfo>(SecurityInfo.class), properties));
-//        DataStream<SecurityInfo> infoStream=kafkaStream.map(str -> {
-//            SecurityInfo info=new SecurityInfo();
-//            info.setLocation("ch6");
-//            info.setSampletime("2022-02-02");
-//            info.setType("worm");
-//            info.setArchitecture("x86");
-//            return info;
-//        });
+        infoStream.map(info ->{
+            System.out.println(info);
+            return info;
+        });
 
-//如果用DataStream实现table的group by，需要使用keyedProcessFunction，因为聚合函数必须要开窗。
         StreamTableEnvironment tableEnv=StreamTableEnvironment.create(env);
         Table infoTable=tableEnv.fromDataStream(infoStream);
         infoTable.printSchema();
-        tableEnv.toChangelogStream(infoTable).print("infoTable:");
-        Table countLocationTable=tableEnv.sqlQuery("select location,sampletime,count(location) from "+infoTable+" group by location,sampletime");
-        Table countTypeTable=tableEnv.sqlQuery("select type,sampletime,count(location) from "+infoTable+" group by type,sampletime");
-        Table countArchTable=tableEnv.sqlQuery("select architecture,sampletime,count(location) from "+infoTable+" group by architecture,sampletime");
+//        tableEnv.toChangelogStream(infoTable).print("infoTable:");
+//        这样key的数量等于sampletime数量*location的数量，sampletime随时间增加，key会越来越多。可以通过一段时间后重开应用清空状态。
+        Table countLocationTable=tableEnv.sqlQuery("select location,substring(sampletime,0,7) as year_month,count(sampletime) from "+infoTable+" where sampletime <> '' and location <> '' group by location , substring(sampletime,0,7)");
+        Table countTypeTable=tableEnv.sqlQuery("select `type`,substring(sampletime,0,7) as year_month,count(sampletime) from "+infoTable+" where sampletime <> '' and `type` <> '' group by `type` , substring(sampletime,0,7)");
+        Table countArchTable=tableEnv.sqlQuery("select `architecture`,substring(sampletime,0,7) as year_month,count(sampletime) from "+infoTable+" where sampletime <> '' and `architecture` <> ''  group by `architecture` , substring(sampletime,0,7)");
         tableEnv.toChangelogStream(countLocationTable).print("countLocationTable: ");
         tableEnv.toChangelogStream(countTypeTable).print("countTypeTable:");
         tableEnv.toChangelogStream(countArchTable).print("countArchTable:");
