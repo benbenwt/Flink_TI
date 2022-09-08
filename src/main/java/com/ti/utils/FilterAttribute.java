@@ -46,9 +46,12 @@ public class FilterAttribute {
             JSONObject element=objects.getJSONObject(index);
             String objectType=element.getString("type");
 
-//            String sampletime=element.getString("created");
-//            sampletime=sampletime.substring(0,10);
-//            result.put("sampletime",sampletime);
+            if(element.has("created"))
+            {
+                String sampletime=element.getString("created");
+                sampletime=sampletime.substring(0,10);
+                result.put("sampletime",sampletime);
+            }
 
             switch (objectType){
                 case "malware":
@@ -220,9 +223,9 @@ public class FilterAttribute {
         }
 
 
-        sampletime=report.getString("created");
-        sampletime=sampletime.substring(0,10);
-        result.put("sampletime",sampletime);
+//        sampletime=report.getString("created");
+//        sampletime=sampletime.substring(0,10);
+//        result.put("sampletime",sampletime);
 
         return result;
     }
